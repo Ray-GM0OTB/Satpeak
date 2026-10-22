@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>QO-100 Peaker</title>
+<style>
+:root{--bg:#0b0f14;--panel:#151b24;--fg:#e9eff6;--dim:#7f8c9b;--acc:#36e38b;--warn:#ffb21f;--bad:#ff4f4f;--grid:#243142;--shade:rgba(54,227,139,.12)}
+body.sun{--bg:#ffffff;--panel:#eef1f4;--fg:#000;--dim:#3e4650;--acc:#007a3d;--warn:#a85f00;--bad:#c40000;--grid:#c8d0d9;--shade:rgba(0,122,61,.12)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:16px/1.25 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  user-select:none;-webkit-user-select:none;padding:max(8px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.status{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--dim)}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--bad)}
+.dot.live{background:var(--acc)}.dot.stall{background:var(--warn)}
+.seg{display:flex;background:var(--panel);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;color:var(--dim);font:600 15px system-ui;padding:8px 14px;border-radius:8px}
+.seg button.on{background:var(--acc);color:#000}
+.big{text-align:center;line-height:1;margin-top:4px}
+#snr{font:700 clamp(84px,30vw,170px)/1 system-ui;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.unit{font-size:22px;color:var(--dim);margin-left:4px}
+.lbl{font-size:13px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.bar{position:relative;height:30px;background:var(--panel);border-radius:8px;overflow:hidden}
+#fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--acc)}
+#pk{position:absolute;top:0;bottom:0;width:4px;margin-left:-2px;background:var(--fg)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.stat{font:700 26px system-ui;font-variant-numeric:tabular-nums}
+#delta{font:800 40px system-ui;font-variant-numeric:tabular-nums}
+canvas{width:100%;display:block;background:var(--panel);border-radius:8px}
+#hist{height:70px}#spec{height:130px}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.controls button,.gain button{border:0;border-radius:10px;background:var(--panel);color:var(--fg);font:600 15px system-ui;padding:14px 4px}
+.controls button.on{background:var(--acc);color:#000}
+.gain{display:flex;align-items:center;gap:8px}
+.gain button{width:48px;padding:10px 0;font-size:22px}
+#gain{min-width:64px;text-align:center;font:700 18px system-ui}
+.badge{font:700 13px system-ui;padding:5px 8px;border-radius:6px;background:var(--panel)}
+.badge.bad{background:var(--bad);color:#fff}
+#err{color:var(--bad);font-size:14px;min-height:0}
+#srvbtn{border:0;background:var(--panel);color:var(--dim);font:600 13px system-ui;padding:6px 10px;border-radius:8px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#setup{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+#setup.show{display:flex}
+#setup .card{background:var(--bg);border:1px solid var(--grid);border-radius:14px;padding:18px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
+#setup input{font:600 18px system-ui;padding:12px;border-radius:10px;border:1px solid var(--grid);background:var(--panel);color:var(--fg);width:100%}
+#setup .btns{display:flex;gap:8px}#setup .btns button{flex:1;border:0;border-radius:10px;padding:14px;font:700 16px system-ui;background:var(--panel);color:var(--fg)}
+#setup .btns button.pri{background:var(--acc);color:#000}
+#setup p{margin:0;color:var(--dim);font-size:14px;line-height:1.4}
+</style>
+</head>
+<body>
+<header>
+  <div class="status"><span class="dot" id="dot"></span><span id="stat">connecting…</span></div>
+  <button id="srvbtn" title="PC address">PC</button>
+  <div class="seg"><button data-m="wb">WB</button><button data-m="nb" class="on">NB</button></div>
+</header>
+
+<div class="big"><span id="snr">--</span><span class="unit">dB</span></div>
+<div class="bar"><div id="fill"></div><div id="pk"></div></div>
+
+<div class="row">
+  <div><div class="lbl">Best</div><div class="stat" id="best">--</div></div>
+  <div style="text-align:right"><div class="lbl">From best</div><div id="delta">--</div></div>
+</div>
+
+<canvas id="hist"></canvas>
+<canvas id="spec"></canvas>
+
+<div class="row">
+  <div class="gain"><button id="gdn">−</button><span id="gain">-- dB</span><button id="gup">+</button></div>
+  <span class="badge" id="adc">ADC --</span>
+</div>
+<div class="row"><span class="lbl" id="beacon"></span><span class="lbl" id="off"></span></div>
+<div id="err"></div>
+
+<div class="controls">
+  <button id="tone">Tone</button>
+  <button id="reset">Reset best</button>
+  <button id="sun">Sun</button>
+  <button id="lock">Screen</button>
+</div>
+
+<div id="setup"><div class="card">
+  <div class="lbl">SatPeak PC address</div>
+  <p>Your PC's Tailscale IP or name and port, e.g. <b>100.101.102.103:8765</b>. SatPeak must be running on the PC and Tailscale switched on here.</p>
+  <input id="srvin" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="100.101.102.103:8765">
+  <div class="btns"><button id="srvcancel">Cancel</button><button id="srvsave" class="pri">Connect</button></div>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let ws, mode='nb', best=-Infinity, hist=[], scaleMax=15, specMax=12, lastMsg=0, rtt=null, labels={}, rate=25;
+let actx, osc, gn, toneOn=false, wakeLock=null;
+
+/* ---------- connection ---------- */
+/* ---------- server address (app or browser) ---------- */
+const APP=window.SatPeakApp||null, DEFAULT_SRV='';
+const served=location.protocol.startsWith('http');
+function getSrv(){let v='';try{v=APP?APP.getServer():(localStorage.getItem('srv')||'')}catch(e){}
+  return v||(served?location.host:'');}
+function setSrv(v){try{APP?APP.setServer(v):localStorage.setItem('srv',v)}catch(e){}}
+function cleanSrv(v){v=(v||'').trim().replace(/^wss?:\/\//,'').replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+  if(v&&!/:\d+$/.test(v)&&!/^\[.*\]$/.test(v))v+=':8765';return v;}
+let srv=getSrv();
+function showSetup(){$('srvin').value=srv||DEFAULT_SRV;$('setup').classList.add('show');}
+function connect(){
+  $('srvbtn').textContent=srv||'Set PC';
+  if(!srv){showSetup();return;}
+  const sec=served&&location.protocol==='https:'&&srv===location.host;
+  let sock;try{sock=new WebSocket((sec?'wss://':'ws://')+srv+'/ws');ws=sock;}catch(e){$('err').textContent='Bad address: '+srv;showSetup();return;}
+  sock.onopen=()=>{ping();};
+  sock.onclose=()=>{if(sock._stop)return;setStatus('offline');setTimeout(connect,1000);};
+  sock.onmessage=e=>{if(sock!==ws)return;
+    const d=JSON.parse(e.data);
+    if(d.type==='m'){lastMsg=performance.now();$('err').textContent='';onMeas(d);}
+    else if(d.type==='pong'){rtt=performance.now()-d.t;}
+    else if(d.type==='hello'){labels=d.modes;rate=d.rate||25;if(d.demo)$('err').textContent='DEMO MODE – simulated signal';}
+    else if(d.type==='err'){$('err').textContent='SDR: '+d.msg;}
+  };
+}
+function ping(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'ping',t:performance.now()}));}
+function send(o){if(ws&&ws.readyState===1)ws.send(JSON.stringify(Object.assign({type:'cmd'},o)));}
+setInterval(ping,2000);
+setInterval(()=>{
+  if(!ws||ws.readyState!==1)return setStatus('offline');
+  const age=performance.now()-lastMsg;
+  setStatus(age>800?'stall':'live');
+},250);
+function setStatus(s){
+  $('dot').className='dot'+(s==='live'?' live':s==='stall'?' stall':'');
+  $('stat').textContent=s==='live'?('live'+(rtt!=null?` · ${rtt.toFixed(0)} ms`:'')):s==='stall'?'no data':'reconnecting…';
+}
+
+/* ---------- measurements ---------- */
+function onMeas(d){
+  if(d.mode!==mode){mode=d.mode;resetBest();
+    document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===mode));}
+  const s=d.snr;
+  if(s>best)best=s;
+  scaleMax=Math.max(10,Math.ceil((best+3)/5)*5);
+  $('snr').textContent=s.toFixed(1);
+  $('fill').style.width=Math.max(0,Math.min(1,s/scaleMax))*100+'%';
+  $('pk').style.left=Math.max(0,Math.min(1,best/scaleMax))*100+'%';
+  $('best').textContent=best.toFixed(1)+' dB';
+  const dl=s-best;
+  $('delta').textContent=(dl>=-0.05?'±0.0':dl.toFixed(1));
+  const col=dl>-0.5?'var(--acc)':dl>-2?'var(--warn)':'var(--bad)';
+  $('delta').style.color=col;$('fill').style.background=col;
+  $('gain').textContent=d.gain.toFixed(0)+' dB';
+  const adc=$('adc');adc.textContent=d.clip>0.9?'CLIPPING – lower gain':'ADC '+Math.round(d.clip*100)+'%';
+  adc.className='badge'+(d.clip>0.9?' bad':'');
+  $('beacon').textContent=labels[mode]||'';
+  $('off').textContent=d.off_khz!=null?`beacon ${d.off_khz>=0?'+':''}${d.off_khz.toFixed(1)} kHz`:'';
+  hist.push(s);if(hist.length>rate*30)hist.shift();
+  drawHist();drawSpec(d);setTone(s);
+}
+function resetBest(){best=-Infinity;hist=[];specMax=12;}
+
+/* ---------- drawing ---------- */
+function fit(c){const r=devicePixelRatio||1,w=c.clientWidth*r,h=c.clientHeight*r;
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h;}return [c.getContext('2d'),w,h,r];}
+const css=v=>getComputedStyle(document.body).getPropertyValue(v);
+function drawHist(){
+  const [g,w,h,r]=fit($('hist'));g.clearRect(0,0,w,h);
+  if(!hist.length)return;
+  const y=v=>h-4*r-Math.max(0,Math.min(1,v/scaleMax))*(h-8*r), n=rate*30;
+  g.strokeStyle=css('--dim');g.setLineDash([4*r,4*r]);g.lineWidth=r;
+  g.beginPath();g.moveTo(0,y(best));g.lineTo(w,y(best));g.stroke();g.setLineDash([]);
+  g.strokeStyle=css('--acc');g.lineWidth=2*r;g.beginPath();
+  hist.forEach((v,i)=>{const x=w-(hist.length-1-i)*w/(n-1);i?g.lineTo(x,y(v)):g.moveTo(x,y(v));});
+  g.stroke();
+}
+function drawSpec(d){
+  const [g,w,h,r]=fit($('spec'));g.clearRect(0,0,w,h);
+  const sp=d.spec,[x0,x1]=d.x,mx=Math.max(...sp);
+  specMax=Math.max(specMax*0.995,mx+3,10);
+  const lo=-3,y=v=>h-(Math.max(lo,v)-lo)/(specMax-lo)*h, xf=k=>(k-x0)/(x1-x0)*w;
+  if(d.shade){g.fillStyle=css('--shade');g.fillRect(xf(d.shade[0]),0,xf(d.shade[1])-xf(d.shade[0]),h);}
+  g.strokeStyle=css('--grid');g.lineWidth=r;
+  for(let db=0;db<specMax;db+=5){g.beginPath();g.moveTo(0,y(db));g.lineTo(w,y(db));g.stroke();}
+  g.beginPath();g.moveTo(xf(0),0);g.lineTo(xf(0),h);g.stroke();
+  g.strokeStyle=css('--fg');g.lineWidth=1.5*r;g.beginPath();
+  sp.forEach((v,i)=>{const x=i/(sp.length-1)*w;i?g.lineTo(x,y(v)):g.moveTo(x,y(v));});g.stroke();
+  g.fillStyle=css('--dim');g.font=`${11*r}px system-ui`;
+  g.fillText(`${x0>=0?'+':''}${x0.toFixed(0)} kHz`,4*r,h-4*r);
+  const t=`+${x1.toFixed(0)} kHz`;g.fillText(t,w-g.measureText(t).width-4*r,h-4*r);
+}
+
+/* ---------- audio tone: pitch rises with signal (200 Hz at 0 dB -> 2 kHz at top of bar) ---------- */
+function toggleTone(){
+  if(!actx){actx=new (window.AudioContext||window.webkitAudioContext)();
+    osc=actx.createOscillator();gn=actx.createGain();osc.type='sine';gn.gain.value=0;
+    osc.connect(gn).connect(actx.destination);osc.start();}
+  actx.resume();toneOn=!toneOn;$('tone').classList.toggle('on',toneOn);
+  gn.gain.setTargetAtTime(toneOn?0.18:0,actx.currentTime,0.02);
+}
+function setTone(s){if(!toneOn)return;
+  const fr=Math.max(0,Math.min(1,s/scaleMax)), f=200*Math.pow(10,fr);
+  osc.frequency.setTargetAtTime(f,actx.currentTime,0.02);}
+
+/* ---------- screen wake lock (works over HTTPS, e.g. tailscale serve) ---------- */
+async function toggleLock(){
+  if(APP){const on=!$('lock').classList.contains('on');try{APP.keepScreenOn(on)}catch(e){}$('lock').classList.toggle('on',on);return;}
+  if(wakeLock){wakeLock.release();wakeLock=null;$('lock').classList.remove('on');return;}
+  try{wakeLock=await navigator.wakeLock.request('screen');$('lock').classList.add('on');
+    wakeLock.addEventListener('release',()=>{$('lock').classList.remove('on');});}
+  catch(e){$('err').textContent='Keep-awake needs HTTPS (tailscale serve) – or set screen timeout manually.';}
+}
+document.addEventListener('visibilitychange',()=>{if(!APP&&document.visibilityState==='visible'&&wakeLock){wakeLock=null;toggleLock();}});
+
+/* ---------- controls ---------- */
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>send({mode:b.dataset.m}));
+$('gup').onclick=()=>send({gain:+2});$('gdn').onclick=()=>send({gain:-2});
+$('reset').onclick=resetBest;$('tone').onclick=toggleTone;$('lock').onclick=toggleLock;
+$('sun').onclick=()=>{document.body.classList.toggle('sun');$('sun').classList.toggle('on');
+  try{localStorage.setItem('sun',document.body.classList.contains('sun')?'1':'')}catch(e){}};
+try{if(localStorage.getItem('sun')){document.body.classList.add('sun');$('sun').classList.add('on');}}catch(e){}
+$('srvbtn').onclick=showSetup;
+$('srvcancel').onclick=()=>{$('setup').classList.remove('show');};
+$('srvsave').onclick=()=>{const v=cleanSrv($('srvin').value);if(!v)return;srv=v;setSrv(v);
+  $('setup').classList.remove('show');resetBest();$('err').textContent='';
+  if(ws){ws._stop=true;try{ws.close()}catch(e){}}connect();};
+$('srvin').addEventListener('keydown',e=>{if(e.key==='Enter')$('srvsave').click();});
+if(APP){$('lock').classList.add('on');}
+connect();
+</script>
+</body>
+</html>

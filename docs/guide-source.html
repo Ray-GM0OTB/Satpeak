@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SatPeak How-To Guide</title>
+<style>
+@page{size:A4;margin:16mm 16mm 18mm}
+:root{--ink:#0f1720;--dim:#5b6673;--line:#d9dee4;--acc:#0a8f50;--accbg:#e8f7ef;--warn:#9a5b00;--warnbg:#fff4e0;--dark:#0b0f14}
+*{box-sizing:border-box}
+body{font:10.5pt/1.5 "DejaVu Sans","Liberation Sans",Arial,sans-serif;color:var(--ink);margin:0}
+h1{font-size:28pt;margin:0;letter-spacing:-.5pt}
+h2{font-size:15pt;margin:20pt 0 6pt;padding-bottom:4pt;border-bottom:2px solid var(--acc);break-after:avoid}
+h3{font-size:11.5pt;margin:12pt 0 4pt;break-after:avoid}
+p{margin:0 0 6pt}
+.num{display:inline-block;width:18pt;height:18pt;border-radius:50%;background:var(--acc);color:#fff;text-align:center;font:700 10pt/18pt sans-serif;margin-right:6pt}
+ol.steps{padding:0;margin:4pt 0 8pt;list-style:none;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 6pt 26pt;break-inside:avoid}
+ol.steps>li:before{content:counter(s);position:absolute;left:0;top:0;width:18pt;height:18pt;border-radius:50%;background:var(--acc);color:#fff;text-align:center;font:700 9.5pt/18pt sans-serif}
+ul{margin:2pt 0 8pt;padding-left:16pt}li{margin-bottom:2pt}
+.note{border-left:4px solid var(--acc);background:var(--accbg);padding:7pt 10pt;margin:8pt 0;break-inside:avoid;border-radius:0 6px 6px 0}
+.warn{border-left-color:#d08a00;background:var(--warnbg)}
+code,.mono{font-family:"DejaVu Sans Mono",monospace;font-size:9.5pt;background:#f1f3f5;padding:0 3pt;border-radius:3px}
+table{width:100%;border-collapse:collapse;margin:6pt 0 10pt;font-size:9.5pt;break-inside:avoid}
+th{text-align:left;background:#f1f3f5;font-weight:700}
+th,td{border-bottom:1px solid var(--line);padding:5pt 7pt;vertical-align:top}
+.cover{height:262mm;display:flex;flex-direction:column;justify-content:space-between;break-after:page}
+.cover .top{display:flex;align-items:center;gap:16pt;margin-top:20mm}
+.cover img{width:34mm;height:34mm}
+.cover .sub{font-size:14pt;color:var(--dim);margin-top:4pt}
+.flow{margin:14mm 0 0}
+.cover .meta{color:var(--dim);font-size:9.5pt;border-top:1px solid var(--line);padding-top:8pt}
+.cols{display:flex;gap:14pt;align-items:flex-start}
+.cols .shot{flex:0 0 58mm}
+.shot img{width:100%;border-radius:10px;border:1px solid #1d2733;display:block}
+.cap{font-size:8.5pt;color:var(--dim);text-align:center;margin-top:3pt}
+.callouts{flex:1}
+.callouts li{margin-bottom:5pt}
+.big{font-size:12pt;font-weight:700}
+.addr{font:700 13pt "DejaVu Sans Mono",monospace;background:var(--dark);color:#36e38b;padding:4pt 9pt;border-radius:6px;display:inline-block}
+.page{break-before:page}
+.keep{break-inside:avoid}
+</style></head><body>
+
+<section class="cover">
+  <div>
+    <div class="top">
+      <img src="images/icon.png" alt="">
+      <div><h1>SatPeak</h1><div class="sub">QO-100 dish peaking meter: how-to guide</div></div>
+    </div>
+    <div class="flow">
+      <svg viewBox="0 0 640 170" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans, sans-serif">
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0a8f50"/></marker></defs>
+        <g font-size="12">
+          <rect x="4" y="40" width="110" height="70" rx="10" fill="#f1f3f5" stroke="#c9d1d9"/>
+          <text x="59" y="70" text-anchor="middle" font-weight="700">Dish + LNB</text>
+          <text x="59" y="90" text-anchor="middle" fill="#5b6673" font-size="10">10.489 GHz</text>
+          <rect x="150" y="40" width="110" height="70" rx="10" fill="#f1f3f5" stroke="#c9d1d9"/>
+          <text x="205" y="70" text-anchor="middle" font-weight="700">PlutoSDR</text>
+          <text x="205" y="90" text-anchor="middle" fill="#5b6673" font-size="10">IF ~739.5 MHz</text>
+          <rect x="296" y="30" width="150" height="90" rx="10" fill="#e8f7ef" stroke="#0a8f50"/>
+          <text x="371" y="62" text-anchor="middle" font-weight="700">PC: SatPeak.exe</text>
+          <text x="371" y="82" text-anchor="middle" fill="#5b6673" font-size="10">measures beacon SNR</text>
+          <text x="371" y="98" text-anchor="middle" fill="#5b6673" font-size="10">25 updates / second</text>
+          <rect x="500" y="30" width="136" height="90" rx="10" fill="#0b0f14"/>
+          <text x="568" y="62" text-anchor="middle" font-weight="700" fill="#e9eff6">Phone</text>
+          <text x="568" y="82" text-anchor="middle" fill="#36e38b" font-size="10">SatPeak app</text>
+          <text x="568" y="98" text-anchor="middle" fill="#9aa6b2" font-size="10">or any browser</text>
+          <line x1="114" y1="75" x2="148" y2="75" stroke="#0a8f50" stroke-width="2" marker-end="url(#a)"/>
+          <line x1="260" y1="75" x2="294" y2="75" stroke="#0a8f50" stroke-width="2" marker-end="url(#a)"/>
+          <line x1="446" y1="75" x2="498" y2="75" stroke="#0a8f50" stroke-width="2" marker-end="url(#a)" stroke-dasharray="5 3"/>
+          <text x="132" y="65" text-anchor="middle" fill="#5b6673" font-size="9">coax</text>
+          <text x="277" y="65" text-anchor="middle" fill="#5b6673" font-size="9">USB</text>
+          <text x="472" y="65" text-anchor="middle" fill="#5b6673" font-size="9">Tailscale</text>
+          <text x="320" y="155" text-anchor="middle" fill="#5b6673" font-size="10">The PC does the measuring; the phone is a live remote display you carry to the dish.</text>
+        </g>
+      </svg>
+    </div>
+    <h3 style="margin-top:12mm">Contents</h3>
+    <table style="width:auto;font-size:10.5pt">
+      <tr><td>1</td><td>What you need</td></tr>
+      <tr><td>2</td><td>Install on the PC</td></tr>
+      <tr><td>3</td><td>Install the phone app</td></tr>
+      <tr><td>4</td><td>The screen explained</td></tr>
+      <tr><td>5</td><td>Peaking the dish, step by step</td></tr>
+      <tr><td>6</td><td>Troubleshooting</td></tr>
+      <tr><td>7</td><td>Advanced options and files</td></tr>
+    </table>
+  </div>
+  <div class="meta">SatPeak 1.0.0 &middot; Windows installer <span class="mono">SatPeak-Setup-1.0.0.exe</span> &middot; Android app <span class="mono">SatPeak.apk</span> &middot; October 2026</div>
+</section>
+
+<h2>1&nbsp; What you need</h2>
+<ul>
+  <li><b>Dish and LNB</b> pointed roughly at QO-100 (25.9&deg;&nbsp;E). The LNB needs power from a bias-tee or inserter, because the Pluto cannot supply it.</li>
+  <li><b>ADALM-Pluto (PlutoSDR)</b> connected to the PC by USB, with the LNB output on its RX port.</li>
+  <li><b>Windows 10/11 PC</b> (64-bit) with <b>Tailscale</b> installed and signed in.</li>
+  <li><b>A phone</b> with Tailscale signed in to the same account. On Android, use the SatPeak app. On iPhone or anything else, use the web browser.</li>
+</ul>
+<div class="note">Only one program can use the Pluto at a time. Close SDR Console, SATSAGEN, Linkbox, SDR++ and similar programs before starting SatPeak.</div>
+
+<h2>2&nbsp; Install on the PC</h2>
+<ol class="steps">
+  <li>Double-click <b>SatPeak-Setup-1.0.0.exe</b>. You don't need administrator rights. Click <b>Next</b>, tick <i>Create a desktop shortcut</i> if you want one, then click <b>Install</b>.</li>
+  <li>Leave <b>Start SatPeak now</b> ticked and click <b>Finish</b>. A black SatPeak window opens. It finds the Pluto on USB automatically.</li>
+  <li><b>Windows Firewall:</b> the first time, Windows may ask whether SatPeak can use the network. Click <b>Allow</b> (Private networks is enough). If you don't, the phone can't connect.</li>
+  <li>Note the address shown in the window, for example:<br><span class="addr">100.101.102.103:8765</span><br>This is your PC's Tailscale address (yours will differ), and it doesn't change.</li>
+</ol>
+<p>After that, start SatPeak from the <b>Start menu &rarr; SatPeak</b> or the desktop icon. Close the window to stop it. <b>SatPeak (demo mode)</b> runs with a simulated signal, which is handy for testing the phone connection indoors without the Pluto.</p>
+
+<h2>3&nbsp; Install the phone app</h2>
+<h3>Android</h3>
+<ol class="steps">
+  <li>Get <b>SatPeak.apk</b> onto the phone. You can tap it in the Claude chat on your phone, email it to yourself, or copy it over USB. On the PC it's in <span class="mono">Desktop\SatPeak</span> and in <i>Start menu &rarr; SatPeak Android app (APK)</i>.</li>
+  <li>Tap the file. If Android says installs from this source are blocked, tap <b>Settings</b>, turn on <b>Allow from this source</b>, go back and tap <b>Install</b>. If Play Protect warns about an unknown developer, tap <b>Install anyway</b>. The app is signed by you, not by Google Play.</li>
+  <li>Turn <b>Tailscale on</b> on the phone.</li>
+  <li>Open <b>SatPeak</b>. The address box appears the first time. Enter your PC address (for example <span class="mono">100.101.102.103:8765</span>) and tap <b>Connect</b>. The app remembers it. To change it later, tap the address button at the top.</li>
+</ol>
+<div class="cols keep" style="margin:6pt 0 4pt">
+  <div class="shot" style="flex-basis:52mm"><img src="images/app-setup.png" alt=""><div class="cap">First start: enter the PC address</div></div>
+  <div class="callouts">
+    <h3 style="margin-top:0">iPhone or any other device</h3>
+    <p>With Tailscale on, open the browser and go to:</p>
+    <p><span class="addr">http://100.101.102.103:8765</span></p>
+    <p>The page is the same as the app. Two differences: the screen may dim while you work, so turn up auto-lock before you go out. And the <b>Screen</b> keep-awake button needs HTTPS, which you can set up with <span class="mono">tailscale serve</span>.</p>
+    <div class="note">The Android app keeps the screen on automatically while it's open, so you don't need to change any phone settings.</div>
+  </div>
+</div>
+
+<h2 class="page">4&nbsp; The screen explained</h2>
+<div class="cols">
+  <div class="shot"><img src="images/app-live.png" alt=""><div class="cap">Live reading on the NB beacon</div></div>
+  <div class="callouts">
+    <ol class="steps">
+      <li><b>Status dot</b>: green means live data, with the round-trip time in ms. Amber means connected but no data; red means reconnecting. The button next to it is the PC address, which you tap to change.</li>
+      <li><b>WB / NB</b> selects the beacon. <b>NB</b> is the CW beacon at 10489.500 MHz and is the default. <b>WB</b> is the DVB-S2 beacon at 10491.500 MHz, for when it's on air.</li>
+      <li><b>Big number</b>: beacon signal-to-noise in dB, updated about 25 times a second. Higher is better.</li>
+      <li><b>Bar</b>: the current level. The white marker shows the best level so far.</li>
+      <li><b>From best</b>: how far you are below your best reading. It shows <span style="color:#0a8f50;font-weight:700">green</span> within 0.5 dB, <span style="color:#9a5b00;font-weight:700">amber</span> within 2 dB, and <span style="color:#c40000;font-weight:700">red</span> beyond that. This is the number to watch.</li>
+      <li><b>History</b>: the last 30 seconds. The dashed line is your best.</li>
+      <li><b>Spectrum</b> around the beacon. In NB mode you should see a single sharp spike.</li>
+      <li><b>Gain &minus; / +</b> changes the Pluto receive gain in 2 dB steps. <b>ADC %</b> shows how hard the input is driven, and it reads <b>CLIPPING</b> when it's too hard.</li>
+      <li><b>Beacon +61.7 kHz</b> is your LNB's frequency error. A steady value means a healthy PLL LNB.</li>
+      <li><b>Tone</b> gives an audio pitch that rises with signal. <b>Reset best</b> clears the peak hold. <b>Sun</b> is a high-contrast mode for daylight. <b>Screen</b> keeps the display awake.</li>
+    </ol>
+  </div>
+</div>
+
+<div class="keep"><h2>5&nbsp; Peaking the dish, step by step</h2>
+<ol class="steps">
+  <li><b>At the PC:</b> start SatPeak and check that the window shows the address with no errors.</li>
+  <li><b>At the dish:</b> open the app and check that the dot is green. Press <b>Reset best</b>.</li>
+  <li><b>Set the gain:</b> use <b>&minus; / +</b> until the ADC stays well below 90% and never shows CLIPPING. About 40 dB is typical.</li>
+  <li><b>Turn on Tone</b> so you can peak by ear without looking at the screen.</li>
+  <li><b>Azimuth:</b> slowly swing the dish left and right through the peak. Watch the big number and the history trace, and stop where <i>From best</i> is green (&plusmn;0.0). Then tighten the azimuth lightly.</li>
+  <li><b>Elevation:</b> do the same up and down, and stop at the best reading.</li>
+  <li><b>LNB skew:</b> rotate the LNB a few degrees each way in its holder and keep the position with the highest reading.</li>
+  <li><b>Repeat</b> azimuth and elevation with small movements. Each pass should gain a little less. Stop when nothing improves by more than about 0.3 dB.</li>
+  <li><b>Tighten everything:</b> watch <i>From best</i> while you do up the bolts. If it drops, loosen, re-peak and tighten again.</li>
+</ol>
+<div class="note"><b>Tips.</b> Move slowly. The reading is averaged slightly, so give it about half a second after each move. Press <b>Reset best</b> after any big move so the peak hold doesn't mislead you. Reflections from your body can change the reading by tenths of a dB, so step away when judging the final peak.</div></div>
+
+<h2>6&nbsp; Troubleshooting</h2>
+<table>
+<tr><th style="width:36%">Problem</th><th>What to do</th></tr>
+<tr><td>Phone dot stays red ("reconnecting")</td><td>Check that Tailscale is <b>on</b> on the phone and that the SatPeak window is open on the PC. Check the address (including <span class="mono">:8765</span>). Allow SatPeak in Windows Firewall: <i>Windows Security &rarr; Firewall &amp; network protection &rarr; Allow an app</i> &rarr; tick SatPeak.exe.</td></tr>
+<tr><td>Dot is amber ("no data")</td><td>The PC can't read the Pluto. Look at the SatPeak window for an error. Close other SDR programs, then re-plug the Pluto and restart SatPeak.</td></tr>
+<tr><td>Window says <i>Could not open the Pluto</i></td><td>The Pluto isn't plugged in, or another program is using it. Try a different USB port or cable. <b>SatPeak (demo mode)</b> confirms that the rest of the system works.</td></tr>
+<tr><td>Window says <i>Port 8765 is already in use</i></td><td>SatPeak is already running in another window. Close the extra one.</td></tr>
+<tr><td>Reading is about 0 dB in WB mode</td><td>The wideband beacon may be off air. Use <b>NB</b>. If it's also around 8 dB (noise only), check that the LNB is powered and the dish is roughly aimed.</td></tr>
+<tr><td>NB shows no clear spike</td><td>Your LNB may be more than 150 kHz off. Run SatPeak with <span class="mono">--lo</span> adjusted, see section 7. Also check that the LNB has power.</td></tr>
+<tr><td>ADC badge shows CLIPPING</td><td>Press <b>&minus;</b> gain until it clears. Clipping flattens the peak and makes peaking impossible.</td></tr>
+<tr><td>Reading jumps around</td><td>Wind, or the dish isn't tight. Use <b>History</b> to judge the average, or run with <span class="mono">--smooth 0.2</span> for more averaging.</td></tr>
+<tr><td>Android won't install the APK</td><td>Allow installs from unknown sources for the app you opened it with (Files, Gmail, Chrome). Android 7 or later is needed. If an older SatPeak is installed with a different signature, uninstall it first.</td></tr>
+</table>
+
+<div class="keep"><h2>7&nbsp; Advanced options and files</h2>
+<p>SatPeak.exe accepts options. Edit the shortcut's <i>Target</i> or run it from a command prompt in <span class="mono">%LOCALAPPDATA%\Programs\SatPeak</span>.</p>
+<table>
+<tr><th style="width:34%">Option</th><th>Meaning</th></tr>
+<tr><td><code>--demo</code></td><td>Simulated signal; no Pluto needed</td></tr>
+<tr><td><code>--lo 9750</code></td><td>LNB local oscillator in MHz (default 9750). Example: <code>--lo 9749.94</code> corrects signals that appear 60 kHz high .</td></tr>
+<tr><td><code>--mode nb</code> / <code>wb</code></td><td>Beacon to start on (default nb)</td></tr>
+<tr><td><code>--gain 40</code></td><td>Starting receive gain, 0&ndash;70 dB</td></tr>
+<tr><td><code>--uri auto</code></td><td>Pluto address: auto (default), <code>usb:1.1.5</code> or <code>ip:192.168.2.1</code></td></tr>
+<tr><td><code>--port 8765</code></td><td>Network port for the phone</td></tr>
+<tr><td><code>--rate 25</code></td><td>Updates per second</td></tr>
+<tr><td><code>--smooth 0.35</code></td><td>Averaging: 1 = none (fastest), 0.1 = heavy</td></tr>
+</table>
+</div>
+<div class="keep"><h3>Where things are</h3>
+<table>
+<tr><td style="width:34%">Installed program</td><td><span class="mono">%LOCALAPPDATA%\Programs\SatPeak</span>. Uninstall from <i>Settings &rarr; Apps</i> or the Start menu.</td></tr>
+<tr><td>Installer, APK, source</td><td><span class="mono">Desktop\SatPeak</span>. Rebuild the installer with <span class="mono">build\build_exe.bat</span>.</td></tr>
+<tr><td>Android signing key</td><td><span class="mono">build\android\satpeak-release.p12</span>, alias <span class="mono">satpeak</span>, password <span class="mono">satpeak-qo100</span>. <b>Keep it safe</b>: updates to the phone app must be signed with the same key.</td></tr>
+</table>
+<div class="note warn"><b>Example:</b> on the author&#39;s station the NB CW beacon was received at IF 739.5625 MHz, so signals appear about 62 kHz high (LNB LO about 9749.94 MHz). That&#39;s normal for a PLL LNB and inside SatPeak&#39;s &plusmn;150 kHz search.</div></div>
+
+</body></html>

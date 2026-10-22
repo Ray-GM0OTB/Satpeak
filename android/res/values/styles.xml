@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="SatPeakTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">#FF0B0F14</item>
+        <item name="android:navigationBarColor">#FF0B0F14</item>
+        <item name="android:colorAccent">#FF36E38B</item>
+    </style>
+</resources>

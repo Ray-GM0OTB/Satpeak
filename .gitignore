@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+# Windows build output
+windows/dist/
+windows/work/
+windows/output/
+windows/SatPeak.apk
+*_log.txt
+# Android build output and downloaded tools
+android/tools/
+android/out/
+android/assets/
+# Signing keys - never commit these
+*.p12
+*.jks
+*.keystore
+# Diagnostics
+sweep.csv

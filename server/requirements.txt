@@ -1,0 +1,4 @@
+numpy
+aiohttp
+pylibiio==0.25
+pyadi-iio
